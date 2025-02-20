@@ -14,8 +14,10 @@ main() {
   int *arg_1;
   int *arg_2;
 
-  arg_1 = malloc(sizeof(int) *SIZE);
-  arg_2 = malloc(sizeof(int) *SIZE);
+  // arg_1 = malloc(sizeof(int) *SIZE);
+  // arg_2 = malloc(sizeof(int) *SIZE);
+  arg_1 = (int*) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(int) * SIZE);
+  arg_2 = (int*) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(int) * SIZE);
 
   hthr1 = CreateThread(NULL, 0, thr_1, (LPVOID) arg_1, 0, &thrId1);
 
@@ -26,42 +28,36 @@ main() {
 
   hthr2 = CreateThread(NULL, 0, thr_2, (LPVOID) arg_2, 0, &thrId2);
 
-  int *ret_value_thr1;
-  int *ret_value_thr2;
-
   if (hthr2 == INVALID_HANDLE_VALUE) {
     fprintf(stderr, "Error: %d \n", GetLastError());
     exit(1);
   }
   
-  fprintf(stdout, "Waiting for thread to end\n");
-  WaitForSingleObject(hthr1, 0);
-  WaitForSingleObject(hthr2, 0);
+  WaitForSingleObject(hthr1, INFINITE);
+  WaitForSingleObject(hthr2, INFINITE);
 
-  fprintf(stdout, "Threads has ended\n");
-  GetExitCodeThread(hthr1, (LPDWORD) &ret_value_thr1);
-  GetExitCodeThread(hthr2, (LPDWORD) &ret_value_thr2);
+  DWORD ret_value_thr1;
+  DWORD ret_value_thr2;
+  GetExitCodeThread(hthr1, &ret_value_thr1);
+  GetExitCodeThread(hthr2, &ret_value_thr2);
   
-  printf("thr1 return value: %d\n", *ret_value_thr1);
+  printf("thr1 return value: %d\n", ret_value_thr1);
   for (int i = 0; i < SIZE; i++) {
-    fprintf(stderr, "arr[%d]=%d\n", i, *(arg_1 + i));
+    printf("arg_1[%d]=%d\n", i, arg_1[i]);
   }
 
-  free(arg_1);
-  free(ret_value_thr1);
-
-  printf("thr2 return value: %d\n", *ret_value_thr2);
+  printf("thr2 return value: %d\n", ret_value_thr2);
   for (int i = 0; i < SIZE; i++) {
-    fprintf(stderr, "arr[%d]=%d\n", i, arg_2[i]);
+    printf("arg_2[%d]=%d\n", i, arg_2[i]);
   }
 
- free(arg_2);
- free(ret_value_thr2);
+  HeapFree(GetProcessHeap(), 0, arg_1);
+  HeapFree(GetProcessHeap(), 0, arg_2);
 
- CloseHandle(hthr1);
- CloseHandle(hthr2);
+  CloseHandle(hthr1);
+  CloseHandle(hthr2);
 
-  _exit(0);
+  ExitProcess(0);
 }
 
 DWORD WINAPI
@@ -72,10 +68,7 @@ thr_1(LPVOID arg) {
     arr[i] = 1;
   }
 
-  int *x = (int*) malloc(sizeof(int));
-  *x = 1;
-
-  ExitThread((DWORD) x);
+  ExitThread(1);
 }
 
 DWORD WINAPI
@@ -86,8 +79,5 @@ thr_2(LPVOID arg) {
     arr[i] = 2;
   }
 
-  int *x = (int*) malloc(sizeof(int));
-  *x = 2;
-  
-  ExitThread((DWORD) x);
+  ExitThread(2);
 }
