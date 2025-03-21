@@ -16,7 +16,8 @@ main(int argc, char *argv) {
 void*
 threadthem(void *arg) {
   int n = (int) arg;
-  
+
+  printf("Value: %d\n", n);
   if (n > 0) {
     pthread_t thread;
     pthread_create(&thread, NULL, threadthem, (void *) (n - 1));
