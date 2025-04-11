@@ -71,22 +71,22 @@ def worst_fit(mem_avail, req_size, index):
         
     while searching:
         if mem_avail[i][1] > max_val and mem_avail[i][1] >= req_size:
-            min = mem_avail[i][1]
-            min_idx = i
+            max_val = mem_avail[i][1]
+            max_idx = i
             found = True
         i = (i + 1) % len(mem_avail)
         if i == index:
             searching = False
 
     if found:
-        base = mem_avail[min_idx][0]
+        base = mem_avail[max_idx][0]
         limit = req_size
-        if mem_avail[min_idx][1] == req_size:
+        if mem_avail[max_idx][1] == req_size:
             del mem_avail[i]
-            min_idx = min_idx % len(mem_avail)
+            max_idx = max_idx % len(mem_avail)
         else:
-            mem_pos = mem_avail[min_idx]
-            mem_avail[min_idx] = (mem_pos[0] + req_size, mem_pos[1] - req_size) 
-        return mem_avail, base, limit, min_idx
+            mem_pos = mem_avail[max_idx]
+            mem_avail[max_idx] = (mem_pos[0] + req_size, mem_pos[1] - req_size) 
+        return mem_avail, base, limit, max_idx
 
     return None
